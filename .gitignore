@@ -1,0 +1,7 @@
+*.lib
+*.pdb
+*.exe
+.vs
+Debug
+AS_DEBUG
+*.vcxproj.user
