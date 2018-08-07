@@ -34,7 +34,8 @@ Expected in this layout and versions:
 ```
 
 NOTE: AngelScript must be built with native platform support (do not use AS_MAX_PORTABILITY)
-See file [3rd_party/BUILDING.md] for futher info.
+
+See file [3rd_party/BUILDING.md](3rd_party/BUILDING.md) for futher info.
 
 ## License
 
