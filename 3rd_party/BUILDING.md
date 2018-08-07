@@ -6,28 +6,34 @@ Currently the project builds on Windowsn in Debug only, dependencies were built 
 
 Following are my notes on building, I wrote them on-the-go
 
+## AngelScript
+
+Download SDK from http://www.angelcode.com/angelscript/downloads.html and use VisualStudio project to build.
+
+NOTE: AS_MAX_PORTABILITY is off by default which is good, we must build without it.
+
 ## Cairo
 
 Download this dependency from https://github.com/preshing/cairo-windows
 
 ## FreeType
 
-download FT2 release form sourceforge
-	https://sourceforge.net/projects/freetype/files/freetype2/2.9.1/ft291.zip/download
+download FT2 release form sourceforge:	https://sourceforge.net/projects/freetype/files/freetype2/2.9.1/ft291.zip/download
+
 this is all you need, only headers are required by CairoMM.
 
 ## SigC++
 
------------------------------------------------
 STATUS: I built it manually, got DLL+LIB, happy with it for now
 
 NOTE: versions are copied from CMakeLists.txt (root):
+```
 set (SIGCXX_MAJOR_VERSION 2)
 set (SIGCXX_MINOR_VERSION 99)
 set (SIGCXX_MICRO_VERSION 1)
 
 set (SIGCXX_API_VERSION 3.0)
----------------------------------------------------
+```
 
 1. open SLN, try building project "sigc" --> 
 error MSB8036: The Windows SDK version 8.1 was not found. Install the required version of Windows SDK or change the SDK version in the project property pages or by right-clicking the solution and selecting "Retarget solution".
@@ -65,7 +71,7 @@ I put the file to MSVC_Net2017 and try again.
 	
 11. added /std:c++17 to "test_bind" commandline -> it builds OK.
 
-12. Run "sigc-install" --> works, throws directory vc14 to path {\..\..\vs14\Win32 …}, nevermind, I'll move it manually
+12. Run "sigc-install" --> works, throws directory vc14 to path {\..\..\vs14\Win32 â€¦}, nevermind, I'll move it manually
 
 ## CairoMM 
 
