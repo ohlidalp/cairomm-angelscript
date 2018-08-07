@@ -5,3 +5,4 @@
 Debug
 AS_DEBUG
 *.vcxproj.user
+*.svg
