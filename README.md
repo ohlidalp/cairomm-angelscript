@@ -4,6 +4,9 @@ Very early demo project - no bindings yet, just naked AngelScript.
 
 Only builds as Debug using Windows 10 + MSVC 2017.
 
+STATUS: it fails with current precompiled binaries (crash upon leaving SvgSurface::create()), 
+apparently due to DLL heap problem: https://stackoverflow.com/a/49728072 - I need to check and rebuild the dependencies.
+
 ## Dependencies
 
 Expected in this layout and versions:

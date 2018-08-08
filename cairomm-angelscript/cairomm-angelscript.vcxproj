@@ -92,12 +92,13 @@
       <ConformanceMode>true</ConformanceMode>
       <ForcedIncludeFiles>
       </ForcedIncludeFiles>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rd_party\angelscript-2-32-0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rd_party\angelscript-2-32-0\include;$(SolutionDir)3rd_party\freetype-2.9.1\include;$(SolutionDir)3rd_party\libsigcplusplus-2-99-1-(API-3-0)\include;$(SolutionDir)3rd_party\cairo-preshing-1.15.10\include;$(SolutionDir)3rd_party\cairomm-1-15-5\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

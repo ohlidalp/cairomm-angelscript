@@ -105,12 +105,14 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rd_party\freetype-2.9.1\include;$(SolutionDir)3rd_party\libsigcplusplus-2-99-1-(API-3-0)\include;$(SolutionDir)3rd_party\cairo-preshing-1.15.10\include;$(SolutionDir)3rd_party\cairomm-1-15-5\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>angelscriptd.lib;cairomm-angelscript.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Debug;$(SolutionDir)3rd_party\angelscript-2-32-0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Debug;$(SolutionDir)3rd_party\angelscript-2-32-0\lib;$(SolutionDir)3rd_party\freetype-2.9.1\lib\Debug;$(SolutionDir)3rd_party\libsigcplusplus-2-99-1-(API-3-0)\lib;$(SolutionDir)3rd_party\cairo-preshing-1.15.10\lib\x86;$(SolutionDir)3rd_party\cairomm-1-15-5\lib\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cairomm-vc150-d-1_16.lib;cairo.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
