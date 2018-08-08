@@ -6,9 +6,14 @@ Currently the project builds on Windowsn in Debug only, dependencies were built 
 
 Following are my notes on building, I wrote them on-the-go
 
+IMPORTANT: All dependencies must be built using \MD or \MDd (debug). Otherwise you'll be getting crashes due to problem described here: https://stackoverflow.com/a/35311928
+           The downloaded 'cairo.dll' is not a problem because all memory it allocates (*create()* methods) is de-allocated within it (*destroy()* methods).
+
 ## AngelScript
 
-Download SDK from http://www.angelcode.com/angelscript/downloads.html and use VisualStudio project to build.
+1. Download SDK from http://www.angelcode.com/angelscript/downloads.html
+2. Open solution in Visual Studio, go to project properties -> C++ -> code generation and set "Runtime Library = Multithreaded debug DLL". See 'IMPORTANT' note on top of this file.
+3. Build
 
 NOTE: AS_MAX_PORTABILITY is off by default which is good, we must build without it.
 
@@ -55,6 +60,7 @@ I put the file to MSVC_Net2017 and try again.
 
 9. Looks good enough. MSVC build log follows
 	NOTE: PlatformToolset=Visual Studio 2017 (v141)
+    NOTE: Runtime library linking is set to \MD[d] by default which is good, see 'IMPORTANT' note on top of this file.
 
 	1>------ Build started: Project: sigc, Configuration: Debug Win32 ------
 	1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(1205,5): warning MSB8012: TargetPath(C:\Users\po185021\source\libsigcplusplus\MSVC_Net2017\Debug\Win32\bin\sigc.dll) does not match the Linker's OutputFile property value (C:\Users\po185021\source\libsigcplusplus\MSVC_Net2017\Debug\Win32\bin\sigc-vc140-d-3_0.dll). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
@@ -121,6 +127,8 @@ STATUS: got DLL+LIB from manual build, happy with it. NOTE: headers are a mess, 
 		
 13 BUILD!! --> looks good!
 	NOTE: PlatformToolset=Visual Studio 2017 (v141)
+    NOTE: Runtime library linking is set to \MD[d] by default which is good, see 'IMPORTANT' note on top of this file.
+    
 	1>------ Build started: Project: gendef, Configuration: Debug Win32 ------
 	..SNIP..
 	1>gendef.vcxproj -> C:\Users\po185021\source\cairomm\cairomm-1.15.5\MSVC_Net2017\Debug\Win32\bin\gendef.exe
