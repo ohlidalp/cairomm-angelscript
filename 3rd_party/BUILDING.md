@@ -7,7 +7,7 @@ Currently the project builds on Windowsn in Debug only, dependencies were built 
 Following are my notes on building, I wrote them on-the-go
 
 IMPORTANT: All dependencies must be built using \MD or \MDd (debug). Otherwise you'll be getting crashes due to problem described here: https://stackoverflow.com/a/35311928
-           The downloaded 'cairo.dll' is not a problem because all memory it allocates (*create()* methods) is de-allocated within it (*destroy()* methods).
+           The downloaded 'cairo.dll' is not a problem because all memory it allocates (*create()* functions) is de-allocated within it (*destroy()* functions).
 
 ## AngelScript
 
