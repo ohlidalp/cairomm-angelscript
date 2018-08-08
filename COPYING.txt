@@ -1,5 +1,5 @@
-  'cairomm-angelscript' - Bindings between Cairo imaging library and
-  AngelScript scripting component.
+  'cairomm-angelscript' - Bindings between Cairo graphics library
+  and AngelScript scripting component.
 
   Copyright (C) 2018 Petr Ohlidal <petr@ohlidal.cz>
 
