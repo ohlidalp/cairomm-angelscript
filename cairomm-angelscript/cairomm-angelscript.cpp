@@ -1,106 +1,154 @@
 
 #include "stdafx.h"
 #include "cairomm-angelscript.h"
+#include <string>
 
-const double PI =  3.14159265358979323846;
+// ================================================================================================
+//     Registration helper class
+// ================================================================================================
 
-// Dummy test functions
-int AddThree(int n) { return n+3; }
-int AddFour(int n) { return n+4; }
-
-// library-check function
-void CairoCheck_DrawTestImage(std::string filename)
+class Helper
 {
-#ifdef CAIRO_HAS_SVG_SURFACE
+public:
+    Helper(asIScriptEngine* e): m_engine(e), m_obj_name(nullptr) {}
 
-    
-    double width = 600;
-    double height = 400;
-    auto surface = Cairo::SvgSurface::create(filename, width, height);
+    void SetActiveObject(const char* name)
+    {
+        m_obj_name = name;
+    }
 
-    auto cr = Cairo::Context::create(surface);
+    void SetNamespace(const char* name)
+    {
+        int res = m_engine->SetDefaultNamespace(name);
+        if (res < asSUCCESS)
+        {
+            throw cairomm_angelscript::SetupError("SetDefaultNamespace() failed"); // TODO: more descriptive!
+        }
+    }
 
-    cr->save(); // save the state of the context
-    cr->set_source_rgb(0.86, 0.45, 0.47);
-    cr->paint();    // fill image with the color
-    cr->restore();  // color is back to black now
+    void RegObject(const char* name, size_t size, asDWORD flags)
+    {
+        int res = m_engine->RegisterObjectType(name, size, flags);
+        if (res < asSUCCESS)
+        {
+            throw cairomm_angelscript::SetupError("RegisterObjectType() failed"); // TODO: more descriptive!
+        }
+        this->SetActiveObject(name);
+    }
 
-    cr->save();
-    // draw a border around the image
-    cr->set_line_width(20.0);    // make the line wider
-    cr->rectangle(0.0, 0.0, width, height);
-    cr->stroke();
+    void RegBehaviour(asEBehaviours behav, const char* decl, const asSFuncPtr & ptr, asDWORD flags = asCALL_CDECL_OBJFIRST)
+    {
+        int res = m_engine->RegisterObjectBehaviour(m_obj_name, behav, decl, ptr, flags);
+        if (res < asSUCCESS)
+        {
+            throw cairomm_angelscript::SetupError("RegisterObjectBehaviour() failed"); // TODO: more descriptive!
+        }
+    }
 
-    cr->set_source_rgba(0.0, 0.0, 0.0, 0.7);
-    // draw a circle in the center of the image
-    cr->arc(width / 2.0, height / 2.0, 
-            height / 4.0, 0.0, 2.0 * PI);
-    cr->stroke();
+    void RegMethod(const char* decl, const asSFuncPtr & ptr, asDWORD flags = asCALL_CDECL_OBJFIRST)
+    {
+        int res = m_engine->RegisterObjectMethod(m_obj_name, decl, ptr, flags);
+        if (res < asSUCCESS)
+        {
+            throw cairomm_angelscript::SetupError("RegisterObjectMethod() failed"); // TODO: more descriptive!
+        }
+    }
 
-    // draw a diagonal line
-    cr->move_to(width / 4.0, height / 4.0);
-    cr->line_to(width * 3.0 / 4.0, height * 3.0 / 4.0);
-    cr->stroke();
-    cr->restore();
+    void RegFunction(const char* name, const asSFuncPtr & ptr, asDWORD flags = asCALL_CDECL)
+    {
+        int res = m_engine->RegisterGlobalFunction(name, ptr, flags);
+        if (res < asSUCCESS)
+        {
+            throw cairomm_angelscript::SetupError("RegisterGlobalFunction() failed"); // TODO: more descriptive!
+        }
+    }
+private:
+    asIScriptEngine* m_engine;
+    const char*      m_obj_name;
+};
 
-    cr->show_page();
+// ================================================================================================
+//     Wrappers (they are inevitable)
+//     see https://www.gamedev.net/forums/topic/540419-custom-smartpointers-and-angelscript-/
+// ================================================================================================
 
-    std::cout << "CheckCairoWorks(): Wrote SVG file \"" << filename << "\"" << std::endl;
+typedef Cairo::RefPtr<Cairo::Context>    CtxRef;
+typedef Cairo::RefPtr<Cairo::SvgSurface> SvgSurfRef;
 
-#else
+void SvgSurfRef_ctor     (void* memory)                              { new(memory) SvgSurfRef(); } // placement-new operator
+// see https://www.gamedev.net/forums/topic/638389-angelscript-copy-constructor-crash/
+void SvgSurfRef_copy_ctor(void* memory, const SvgSurfRef& other)     { new(memory) SvgSurfRef(other); } // placement-new operator
+void SvgSurfRef_dtor     (void* memory)                              { ((SvgSurfRef*)memory)->~SvgSurfRef(); }
 
-    std::cout << "CheckCairoWorks(): You must compile cairo with SVG support for this example to work."  << std::endl;
+void CtxRef_ctor         (void* memory)                              { new(memory) CtxRef(); } // placement-new operator
+// see https://www.gamedev.net/forums/topic/638389-angelscript-copy-constructor-crash/
+void CtxRef_copy_ctor    (void* memory, const CtxRef& other)         { new(memory) CtxRef(other); } // placement-new operator
+void CtxRef_dtor         (void* memory)                              { static_cast<CtxRef*>(memory)->~shared_ptr(); }
 
-#endif    
-}
+// pseudo-member functions must accept 'this' as const& !!! Otherwise it crashes!
+void Ctx_save            (const CtxRef& ctx)                                { ctx->save(); }
+void Ctx_paint           (const CtxRef& ctx)                                { ctx->paint(); }
+void Ctx_restore         (const CtxRef& ctx)                                { ctx->restore(); }
+void Ctx_stroke          (const CtxRef& ctx)                                { ctx->stroke(); }
+void Ctx_show_page       (const CtxRef& ctx)                                { ctx->show_page(); }
+void Ctx_move_to         (const CtxRef& ctx, double x, double y)            { ctx->move_to(x,y); }
+void Ctx_line_to         (const CtxRef& ctx, double x, double y)            { ctx->line_to(x,y); }
+void Ctx_set_source_rgb  (const CtxRef& ctx, double r, double g, double b)  { ctx->set_source_rgb(r,g,b); }
+void Ctx_set_line_width  (const CtxRef& ctx, double w)                      { ctx->set_line_width(w); }
+void Ctx_set_source_rgba (const CtxRef& ctx, double r, double g, double b, double a) { ctx->set_source_rgba(r,g,b,a); }
+void Ctx_rectangle       (const CtxRef& ctx, double x, double y, double w, double h) { ctx->rectangle(x,y,w,h); }
+void Ctx_arc             (const CtxRef& ctx, double xc, double yc, double radius, double a1, double a2) { ctx->arc(xc, yc, radius, a1, a2); }
 
-using namespace std;
+// Angelscript only supports polymorphism for reference types
+CtxRef Ctx_from_Svg      (SvgSurfRef surface)                        { return Cairo::Context::create(surface); }
 
-bool RegisterCairo(asIScriptEngine *engine)
+
+// ================================================================================================
+//     Public 'register!' function
+// ================================================================================================
+
+void cairomm_angelscript::RegisterInterface(asIScriptEngine *engine)
 {
-    int r;
+    Helper h(engine);
 
-    r = engine->SetDefaultNamespace("TestDummy");
-    if (r < asSUCCESS)
-    {
-        cout <<"ERR creating namespace"<<endl;
-        return false;
-    }
+    h.SetNamespace("Cairo");
 
-    r = engine->RegisterGlobalFunction("int AddThree(int n)", asFUNCTION(AddThree), asCALL_CDECL); // Dummy test function
-    if (r < asSUCCESS)
-    {
-        cout <<"ERR reg. function AddThree"<<endl;
-        return false;
-    }
+    // SvgSurface
+    h.RegObject("SvgSurfaceRef", sizeof(SvgSurfRef), asOBJ_VALUE | asGetTypeTraits<SvgSurfRef>());
+    h.RegBehaviour(asBEHAVE_CONSTRUCT, "void f()",                        asFUNCTION(SvgSurfRef_ctor));
+    h.RegBehaviour(asBEHAVE_CONSTRUCT, "void f(const SvgSurfaceRef &in)", asFUNCTION(SvgSurfRef_copy_ctor));
+    h.RegBehaviour(asBEHAVE_DESTRUCT,  "void f()",                        asFUNCTION(SvgSurfRef_dtor));
 
-    r = engine->SetDefaultNamespace(""); // Attempt to reset the namespace to global
-    if (r != asSUCCESS)
-    {
-        cout <<"ERR - could not reset namespace"<<endl;
-        return false;
-    }
+  /*  h.RegMethod("SvgSurfaceRef& opAssign(SvgSurfaceRef &in)",
+        asMETHODPR(SvgSurfRef, operator=, (SvgSurfRef const&), SvgSurfRef&), asCALL_THISCALL);*/
 
-    r = engine->RegisterGlobalFunction("int AddFour(int n)", asFUNCTION(AddFour), asCALL_CDECL); // Dummy test function
-    if (r < asSUCCESS)
-    {
-        cout <<"ERR reg. function AddFour"<<endl;
-        return false;
-    }
+    // Context
+    h.RegObject("ContextRef", sizeof(CtxRef), asOBJ_VALUE | asGetTypeTraits<CtxRef>());
 
-    r = engine->SetDefaultNamespace("CairoCheck"); // TEST: can we refer from namespaced function to non-namespaced 'string'?
-    if (r != asSUCCESS)
-    {
-        cout <<"ERR - could not set namespace CairoCheck"<<endl;
-        return false;
-    }
+    h.RegBehaviour(asBEHAVE_CONSTRUCT, "void f()",                      asFUNCTION(CtxRef_ctor));
+    h.RegBehaviour(asBEHAVE_CONSTRUCT, "void f(const ContextRef &in)",  asFUNCTION(CtxRef_copy_ctor));
+    h.RegBehaviour(asBEHAVE_DESTRUCT,  "void f()",                      asFUNCTION(CtxRef_dtor));
 
-    r = engine->RegisterGlobalFunction("void DrawTestImage(string)", asFUNCTION(CairoCheck_DrawTestImage), asCALL_CDECL); // library check
-    if (r < asSUCCESS)
-    {
-        cout <<"ERR reg. function CairoCheck_DrawTestImage()"<<endl;
-        return false;
-    }
+ /*   h.RegMethod("ContextRef& opAssign(ContextRef &in)",
+        asMETHODPR(CtxRef, operator=, (CtxRef const&), CtxRef&), asCALL_THISCALL);*/
 
-    return true;
+    h.RegMethod("void save            ()",                              asFUNCTION(Ctx_save));
+    h.RegMethod("void paint           ()",                              asFUNCTION(Ctx_paint));
+    h.RegMethod("void restore         ()",                              asFUNCTION(Ctx_restore));
+    h.RegMethod("void stroke          ()",                              asFUNCTION(Ctx_stroke));
+    h.RegMethod("void show_page       ()",                              asFUNCTION(Ctx_show_page));
+    h.RegMethod("void move_to         (double x, double y)",            asFUNCTION(Ctx_move_to));
+    h.RegMethod("void line_to         (double x, double y)",            asFUNCTION(Ctx_line_to));
+    h.RegMethod("void set_line_width  (double w)",                      asFUNCTION(Ctx_set_line_width));
+    h.RegMethod("void set_source_rgb  (double r, double g, double b)",  asFUNCTION(Ctx_set_source_rgb));
+    h.RegMethod("void set_source_rgba (double r, double g, double b, double a)", asFUNCTION(Ctx_set_source_rgba));
+    h.RegMethod("void rectangle       (double x, double y, double w, double h)", asFUNCTION(Ctx_rectangle));
+    h.RegMethod("void arc             (double xc, double yc, double radius, double a1, double a2)", asFUNCTION(Ctx_arc));
+
+    // Static functions
+    h.SetNamespace("Cairo::SvgSurface");
+    h.RegFunction("SvgSurfaceRef create(string filename, double w, double h)", asFUNCTION(Cairo::SvgSurface::create));
+
+    h.SetNamespace("Cairo::Context");
+    h.RegFunction("ContextRef create(SvgSurfaceRef)", asFUNCTION(Ctx_from_Svg));
 }

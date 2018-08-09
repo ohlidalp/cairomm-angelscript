@@ -1,6 +1,6 @@
 /*
   'cairomm-angelscript'
-  Bindings between Cairo imaging library and AngelScript scripting component.
+  Bindings between Cairo graphics library and AngelScript scripting component.
 
   Copyright (C) 2018 Petr Ohlidal <petr@ohlidal.cz>
 
@@ -28,6 +28,18 @@
 #include <angelscript.h>
 #endif
 
-/// @return True on success
-bool RegisterCairo(asIScriptEngine *engine);
+namespace cairomm_angelscript
+{
+
+class SetupError: public std::runtime_error
+{
+public:
+    SetupError(const char* msg): runtime_error(msg) {}
+    //const char* what() { return std::runtime_error::what(); }
+};
+
+/// @throws SetupException on error
+void RegisterInterface(asIScriptEngine *engine);
+
+} // namespace CairoAngelscript
 

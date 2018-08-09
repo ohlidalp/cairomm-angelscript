@@ -13,7 +13,6 @@ using namespace std;
 void ConfigureEngine(asIScriptEngine *engine);
 int  CompileScript(asIScriptEngine *engine);
 void PrintString(string &str);
-void LineCallback(asIScriptContext *ctx, DWORD *timeOut);
 
 void MessageCallback(const asSMessageInfo *msg, void *param)
 {
@@ -65,26 +64,13 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	// We don't want to allow the script to hang the application, e.g. with an
-	// infinite loop, so we'll use the line callback function to set a timeout
-	// that will abort the script after a certain time. Before executing the 
-	// script the timeOut variable will be set to the time when the script must 
-	// stop executing. 
-	DWORD timeOut;
-	r = ctx->SetLineCallback(asFUNCTION(LineCallback), &timeOut, asCALL_CDECL);
-	if( r < 0 )
-	{
-		cout << "Failed to set the line callback function." << endl;
-		ctx->Release();
-		engine->Release();
-		return -1;
-	}
+
 
 	// Find the function for the function we want to execute.
-	asIScriptFunction *func = engine->GetModule(0)->GetFunctionByDecl("float calc(float, float)");
+	asIScriptFunction *func = engine->GetModule(0)->GetFunctionByDecl("void main()");
 	if( func == 0 )
 	{
-		cout << "The function 'float calc(float, float)' was not found." << endl;
+		cout << "The function 'main()' was not found." << endl;
 		ctx->Release();
 		engine->Release();
 		return -1;
@@ -104,13 +90,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	// Now we need to pass the parameters to the script function. 
-	ctx->SetArgFloat(0, 3.14159265359f);
-	ctx->SetArgFloat(1, 2.71828182846f);
 
-	// Set the timeout before executing the function. Give the function 1 sec
-	// to return before we'll abort it.
-	timeOut = timeGetTime() + 1000;
 
 	// Execute the function
 	cout << "Executing the script." << endl;
@@ -139,9 +119,7 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		// Retrieve the return value from the context
-		float returnValue = ctx->GetReturnFloat();
-		cout << "The script function returned: " << returnValue << endl;
+		cout << "Script finished OK" << endl;
 	}
 
 	// We must release the contexts when no longer using them
@@ -169,9 +147,13 @@ void ConfigureEngine(asIScriptEngine *engine)
 	r = engine->RegisterGlobalFunction("void Print(string &in)", asFUNCTION(PrintString), asCALL_CDECL); assert( r >= 0 );
 	r = engine->RegisterGlobalFunction("uint GetSystemTime()", asFUNCTION(timeGetTime), asCALL_STDCALL); assert( r >= 0 );
 
-    if (!RegisterCairo(engine))
+    try
     {
-        cout << "!! ERROR registering Cairo !!" << endl;
+    cairomm_angelscript::RegisterInterface(engine);
+    }
+    catch (cairomm_angelscript::SetupError &e)
+    {
+        cout << "!! ERROR registering Cairo: " << e.what() << endl;
     }
 
 	// It is possible to register the functions, properties, and types in 
@@ -252,17 +234,7 @@ int CompileScript(asIScriptEngine *engine)
 	return 0;
 }
 
-void LineCallback(asIScriptContext *ctx, DWORD *timeOut)
-{
-	// If the time out is reached we abort the script
-	if( *timeOut < timeGetTime() )
-		ctx->Abort();
 
-	// It would also be possible to only suspend the script,
-	// instead of aborting it. That would allow the application
-	// to resume the execution where it left of at a later 
-	// time, by simply calling Execute() again.
-}
 
 // Function implementation with native calling convention
 void PrintString(string &str)
