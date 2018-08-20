@@ -45,6 +45,16 @@ public:
         }
     }
 
+    void RegConstructor(const char* decl, const asSFuncPtr & ptr)
+    {
+        this->RegBehaviour(asBEHAVE_CONSTRUCT, decl, ptr);
+    }
+
+    void RegDestructor(const char* decl, const asSFuncPtr & ptr)
+    {
+        this->RegBehaviour(asBEHAVE_DESTRUCT, decl, ptr);
+    }
+
     void RegMethod(const char* decl, const asSFuncPtr & ptr, asDWORD flags = asCALL_CDECL_OBJFIRST)
     {
         int res = m_engine->RegisterObjectMethod(m_obj_name, decl, ptr, flags);
@@ -75,17 +85,15 @@ private:
 typedef Cairo::RefPtr<Cairo::Context>    CtxRef;
 typedef Cairo::RefPtr<Cairo::SvgSurface> SvgSurfRef;
 
-void SvgSurfRef_ctor     (void* memory)                              { new(memory) SvgSurfRef(); } // placement-new operator
-// see https://www.gamedev.net/forums/topic/638389-angelscript-copy-constructor-crash/
-void SvgSurfRef_copy_ctor(void* memory, const SvgSurfRef& other)     { new(memory) SvgSurfRef(other); } // placement-new operator
+void SvgSurfRef_ctor     (void* memory)                              { new(memory) SvgSurfRef(); }       // placement-new operator
+void SvgSurfRef_copy_ctor(void* memory, const SvgSurfRef& other)     { new(memory) SvgSurfRef(other); }  // placement-new operator
 void SvgSurfRef_dtor     (void* memory)                              { ((SvgSurfRef*)memory)->~SvgSurfRef(); }
 
-void CtxRef_ctor         (void* memory)                              { new(memory) CtxRef(); } // placement-new operator
-// see https://www.gamedev.net/forums/topic/638389-angelscript-copy-constructor-crash/
-void CtxRef_copy_ctor    (void* memory, const CtxRef& other)         { new(memory) CtxRef(other); } // placement-new operator
+void CtxRef_ctor         (void* memory)                              { new(memory) CtxRef(); }        // placement-new operator
+void CtxRef_copy_ctor    (void* memory, const CtxRef& other)         { new(memory) CtxRef(other); }   // placement-new operator
 void CtxRef_dtor         (void* memory)                              { static_cast<CtxRef*>(memory)->~shared_ptr(); }
 
-// pseudo-member functions must accept 'this' as const& !!! Otherwise it crashes!
+// Pseudo-member functions must accept `this` as `const&` (otherwise the program crashes)
 void Ctx_save            (const CtxRef& ctx)                                { ctx->save(); }
 void Ctx_paint           (const CtxRef& ctx)                                { ctx->paint(); }
 void Ctx_restore         (const CtxRef& ctx)                                { ctx->restore(); }
@@ -115,22 +123,17 @@ void cairomm_angelscript::RegisterInterface(asIScriptEngine *engine)
 
     // SvgSurface
     h.RegObject("SvgSurfaceRef", sizeof(SvgSurfRef), asOBJ_VALUE | asGetTypeTraits<SvgSurfRef>());
-    h.RegBehaviour(asBEHAVE_CONSTRUCT, "void f()",                        asFUNCTION(SvgSurfRef_ctor));
-    h.RegBehaviour(asBEHAVE_CONSTRUCT, "void f(const SvgSurfaceRef &in)", asFUNCTION(SvgSurfRef_copy_ctor));
-    h.RegBehaviour(asBEHAVE_DESTRUCT,  "void f()",                        asFUNCTION(SvgSurfRef_dtor));
-
-  /*  h.RegMethod("SvgSurfaceRef& opAssign(SvgSurfaceRef &in)",
-        asMETHODPR(SvgSurfRef, operator=, (SvgSurfRef const&), SvgSurfRef&), asCALL_THISCALL);*/
+    
+    h.RegConstructor("void f()",                                        asFUNCTION(SvgSurfRef_ctor));
+    h.RegConstructor("void f(const SvgSurfaceRef &in)",                 asFUNCTION(SvgSurfRef_copy_ctor));
+    h.RegDestructor ("void f()",                                        asFUNCTION(SvgSurfRef_dtor));
 
     // Context
     h.RegObject("ContextRef", sizeof(CtxRef), asOBJ_VALUE | asGetTypeTraits<CtxRef>());
 
-    h.RegBehaviour(asBEHAVE_CONSTRUCT, "void f()",                      asFUNCTION(CtxRef_ctor));
-    h.RegBehaviour(asBEHAVE_CONSTRUCT, "void f(const ContextRef &in)",  asFUNCTION(CtxRef_copy_ctor));
-    h.RegBehaviour(asBEHAVE_DESTRUCT,  "void f()",                      asFUNCTION(CtxRef_dtor));
-
- /*   h.RegMethod("ContextRef& opAssign(ContextRef &in)",
-        asMETHODPR(CtxRef, operator=, (CtxRef const&), CtxRef&), asCALL_THISCALL);*/
+    h.RegConstructor("void f()",                                        asFUNCTION(CtxRef_ctor));
+    h.RegConstructor("void f(const ContextRef &in)",                    asFUNCTION(CtxRef_copy_ctor));
+    h.RegDestructor ("void f()",                                        asFUNCTION(CtxRef_dtor));
 
     h.RegMethod("void save            ()",                              asFUNCTION(Ctx_save));
     h.RegMethod("void paint           ()",                              asFUNCTION(Ctx_paint));
