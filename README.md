@@ -1,6 +1,6 @@
 # CairoMM-AngelScript bindings README
 
-Very early demo project - no bindings yet, just AngelScript + some dummy functions.
+Initial working demo project - bindings to create SVG image, add some elements and save the file.
 
 Only builds as Debug using Windows 10 + MSVC 2017.
 
