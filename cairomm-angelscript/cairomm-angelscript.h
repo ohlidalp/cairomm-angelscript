@@ -41,5 +41,5 @@ public:
 /// @throws SetupException on error
 void RegisterInterface(asIScriptEngine *engine);
 
-} // namespace CairoAngelscript
+} // namespace cairomm_angelscript
 
